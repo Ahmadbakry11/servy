@@ -1,0 +1,4 @@
+<h1>Bear Deatils</h1>
+<p> Bear: <%= bear.id%></p>
+<p> Name: <%= bear.name%></p>
+<p> Type: <%= bear.type%></p>
