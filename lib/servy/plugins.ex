@@ -13,10 +13,17 @@ defmodule Servy.Plugins do
 
   def redirect(%Conv{} = conv), do: conv
 
-  def log(%Conv{} = conv), do: IO.inspect(conv)
+  def log(%Conv{} = conv) do
+    if Mix.env == :dev do
+      IO.inspect(conv)
+    end
+    conv
+  end
 
   def track(%Conv{status: 404} = conv) do
-    IO.inspect(conv)
+    if Mix.env != :test do
+      IO.inspect(conv)
+    end
     conv
   end
 

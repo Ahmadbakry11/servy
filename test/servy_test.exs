@@ -3,6 +3,6 @@ defmodule ServyTest do
   doctest Servy
 
   test "greets the world" do
-    assert Servy.hello("elixir") == "Hello"
+    assert Servy.hello("elixir") == "Hello elixir"
   end
 end

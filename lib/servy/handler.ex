@@ -79,10 +79,10 @@ defmodule Servy.Handler do
 
   def format_response(conv) do
     """
-    HTTP/1.1 #{conv.status} #{status_reason(conv.status)}
-    Content-Type: text/html
-    Content-Length: #{String.length(conv.res_body)}
-
+    HTTP/1.1 #{conv.status} #{status_reason(conv.status)}\r
+    Content-Type: text/html\r
+    Content-Length: #{String.length(conv.res_body)}\r
+    \r
     #{conv.res_body}
     """
   end
@@ -98,95 +98,92 @@ defmodule Servy.Handler do
   end
 end
 
-request = """
-GET /wildthings HTTP/1.1
-Host: example.com  def route(%{method: "DELETE", path: "/bears"<>id} = conv) do
-    conv = %{ conv | status: 403, res_body: "Deleting bears is forbidden"}
-  end
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
-request2 = """
-GET /bigfoot HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
-request3 = """
-GET /bears/1 HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
+# request = """
+# GET /wildthings HTTP/1.1
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# request2 = """
+# GET /bigfoot HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# request3 = """
+# GET /bears/1 HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
 request4 = """
-DELETE /bears/1 HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
+DELETE /bears/1 HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
 """
-
-request5 = """
-GET /wildlife HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
-request6 = """
-GET /bears?id=1 HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
-request7 = """
-GET /about HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
-request8 = """
-GET /bears/new HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
-request9 = """
-POST /bears HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 21
-
-name=Baloo&type=Brown
-"""
-
-request10 = """
-GET /bears HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
-
-"""
-
+#
+# request5 = """
+# GET /wildlife HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# request6 = """
+# GET /bears?id=1 HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# request7 = """
+# GET /about HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# request8 = """
+# GET /bears/new HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# request9 = """
+# POST /bears HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+# Content-Type: application/x-www-form-urlencoded
+# Content-Length: 21
+#
+# name=Baloo&type=Brown
+# """
+#
+# request10 = """
+# GET /bears HTTP/1.1\r
+# Host: example.com\r
+# User-Agent: ExampleBrowser/1.0\r
+# Accept: */*\r
+# \r
+# """
+#
 # response = Servy.Handler.handle(request)
 # IO.puts response
-
-# IO.inspect elem(Servy.Handler.all_bears(), 0)
-
-response = Servy.Handler.handle(request3)
+# #
+# # IO.inspect elem(Servy.Handler.all_bears(), 0)
+#
+response = Servy.Handler.handle(request4)
 IO.puts response
