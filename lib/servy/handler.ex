@@ -1,8 +1,8 @@
 defmodule Servy.Handler do
+  alias Servy.Conv
   import Servy.Plugins
   import Servy.Parser
   import Servy.FileHandler
-  alias Servy.Conv
   alias Servy.BearsController
 
   @moduledoc """
@@ -19,6 +19,7 @@ defmodule Servy.Handler do
     |> route
     |> track
     |> emojify
+    |> put_content_length
     |> format_response
   end
 
@@ -29,6 +30,10 @@ defmodule Servy.Handler do
   def route(%Conv{method: "GET", path: "/bears"} = conv) do
     BearsController.index(conv)
     # conv = %{ conv | status: 200, res_body: "Teddy, Smokey, Paddington" }
+  end
+
+  def route(%Conv{method: "GET", path: "/api/bears"} = conv) do
+    Servy.Api.BearsController.index(conv)
   end
 
   def route(%Conv{method: "GET", path: "/bears/new"} = conv) do
@@ -45,6 +50,10 @@ defmodule Servy.Handler do
 
   def route(%Conv{method: "POST", path: "/bears"} = conv) do
     BearsController.create(conv, conv.params)
+  end
+
+  def route(%Conv{method: "POST", path: "/api/bears"} = conv) do
+    Servy.Api.BearsController.create(conv, conv.params)
   end
 
   def route(%Conv{method: "DELETE", path: "/bears/"<>id} = conv) do
@@ -73,6 +82,14 @@ defmodule Servy.Handler do
     |> handle_file(conv)
   end
 
+  def route(%Conv{method: "GET", path: "/"<>name} = conv) do
+    @pages_path
+    |> Path.join("#{name}.md")
+    |> File.read()
+    |> handle_file(conv)
+    |> handle_markdown
+  end
+
   def route(%Conv{path: path} = conv) do
     conv = %{conv | status: 404, res_body: "#{path}: No thing found"}
   end
@@ -80,8 +97,7 @@ defmodule Servy.Handler do
   def format_response(conv) do
     """
     HTTP/1.1 #{conv.status} #{status_reason(conv.status)}\r
-    Content-Type: text/html\r
-    Content-Length: #{String.length(conv.res_body)}\r
+    #{format_response_headers(conv)}
     \r
     #{conv.res_body}
     """
@@ -96,31 +112,43 @@ defmodule Servy.Handler do
       404 => "Not Found"
     }[code]
   end
+
+  defp put_content_length(conv) do
+    content_length = String.length(conv.res_body)
+    new_headers = Map.put(conv.res_headers, "Content-Length", content_length)
+    %{conv | res_headers: new_headers }
+  end
+
+  defp format_response_headers(conv) do
+    for {k,v} <- conv.res_headers do
+      "#{k}: #{v}\r"
+    end |> Enum.join("\n")
+  end
 end
 
-# request = """
-# GET /wildthings HTTP/1.1
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
-# request2 = """
-# GET /bigfoot HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
-# request3 = """
-# GET /bears/1 HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
+request = """
+GET /wildthings HTTP/1.1\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request2 = """
+GET /bigfoot HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request3 = """
+GET /bears/1 HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
 request4 = """
 DELETE /bears/1 HTTP/1.1\r
 Host: example.com\r
@@ -128,62 +156,89 @@ User-Agent: ExampleBrowser/1.0\r
 Accept: */*\r
 \r
 """
-#
-# request5 = """
-# GET /wildlife HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
-# request6 = """
-# GET /bears?id=1 HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
-# request7 = """
-# GET /about HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
-# request8 = """
-# GET /bears/new HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-#
-# """
-#
-# request9 = """
-# POST /bears HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-# Content-Type: application/x-www-form-urlencoded
-# Content-Length: 21
-#
-# name=Baloo&type=Brown
-# """
-#
-# request10 = """
-# GET /bears HTTP/1.1\r
-# Host: example.com\r
-# User-Agent: ExampleBrowser/1.0\r
-# Accept: */*\r
-# \r
-# """
+
+request5 = """
+GET /wildlife HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request6 = """
+GET /bears?id=1 HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request7 = """
+GET /about HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request8 = """
+GET /bears/new HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request9 = """
+POST /bears HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+Content-Type: application/x-www-form-urlencoded\r
+Content-Length: 21\r
+\r
+name=Baloo&type=Brown\r
+"""
+
+request10 = """
+GET /bears HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request11 = """
+GET /api/bears HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
+
+request12 = """
+POST /api/bears HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+Content-Type: application/json\r
+Content-Length: 21\r
+\r
+{"name": "Breezly", "type": "Polar"}
+"""
+
+request13 = """
+GET /faq HTTP/1.1\r
+Host: example.com\r
+User-Agent: ExampleBrowser/1.0\r
+Accept: */*\r
+\r
+"""
 #
 # response = Servy.Handler.handle(request)
 # IO.puts response
 # #
 # # IO.inspect elem(Servy.Handler.all_bears(), 0)
 #
-response = Servy.Handler.handle(request4)
+response = Servy.Handler.handle(request13)
 IO.puts response

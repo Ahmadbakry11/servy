@@ -1,18 +1,25 @@
 defmodule Servy.Wildthings do
+  # @db_path Path.expand("../db", __DIR__)
   alias Servy.Bear
 
+  defp read_json do
+    Path.expand("../db", __DIR__)
+    |> Path.join("bears.json")
+    |> File.read()
+    |> handle_file
+  end
+
+  defp handle_file({:ok, content}) do
+    Poison.decode!(content, as: %{"bears" => [%Bear{}]})
+    |> Map.get("bears")
+  end
+
+  defp handle_file({:error, reason}) do
+    IO.inspect "There is an error: #{reason}"
+    [""]
+  end
+
   def all_bears() do
-    [
-      %Bear{id: 1, name: "Teddy", type: "Brown", hibernating: true},
-      %Bear{id: 2, name: "Smokey", type: "Black"},
-      %Bear{id: 3, name: "Paddington", type: "Brown"},
-      %Bear{id: 4, name: "Scarface", type: "Grizzly", hibernating: true},
-      %Bear{id: 5, name: "Snow", type: "Polar"},
-      %Bear{id: 6, name: "Brutus", type: "Grizzly"},
-      %Bear{id: 7, name: "Rosie", type: "Black", hibernating: true},
-      %Bear{id: 8, name: "Roscoe", type: "Panda"},
-      %Bear{id: 9, name: "Iceman", type: "Polar", hibernating: true},
-      %Bear{id: 10, name: "Kenai", type: "Grizzly"}
-    ]
+    read_json()
   end
 end

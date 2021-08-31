@@ -10,4 +10,13 @@ defmodule Servy.FileHandler do
   def handle_file({:error, reason}, conv) do
     conv = %{ conv | status: 500, res_body: reason }
   end
+
+  def handle_markdown(conv) do
+    case conv.status do
+      "200" ->
+        %{conv | res_body: Earmark.as_html!(conv.res_body)}
+      _ ->
+        conv
+    end
+  end
 end

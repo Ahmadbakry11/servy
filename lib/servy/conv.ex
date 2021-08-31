@@ -4,6 +4,7 @@ defmodule Servy.Conv do
     status: nil,
     res_body: "",
     path: "",
+    res_headers: %{"Content-Type" => "text/html", "Content-Length" => nil},
     params: %{},
     headers: %{}
   ]

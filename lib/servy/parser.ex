@@ -8,7 +8,7 @@ defmodule Servy.Parser do
     [req_string | headers_list] = String.split(top, "\r\n")
     [method, path, _] = String.split(req_string, " ")
 
-    params = get_params(params_list)
+    params = get_params(params_list, path)
 
     headers = parse_headers(headers_list, %{})
     # IO.inspect headers_list
@@ -16,15 +16,19 @@ defmodule Servy.Parser do
     %Conv{ method: method, path: path, params: params, headers: headers}
   end
 
-  def get_params([]), do: %{}
+  def get_params([], path), do: %{}
 
-  def get_params(params_list) do
+  def get_params(params_list, path) do
     [params_string | tail] = params_list
-    params_string |> parse_params
+    params_string |> parse_params(path)
   end
 
-  def parse_params(str) do
-    str |> String.trim |> URI.decode_query
+  def parse_params(str, path) do
+    if String.match?(path, ~r/^\/api\//) do
+      Poison.Parser.parse!(str, %{})
+    else
+      str |> String.trim |> URI.decode_query
+    end
   end
 
   def parse_headers([hd | tail], map) do
